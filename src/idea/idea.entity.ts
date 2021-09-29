@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { IdeaRO } from './dto/idea.dto';
 
-@Entity('idea')
+@Entity('ideas')
 export class IdeaEntity {
     @PrimaryGeneratedColumn('increment')
     id: string;
