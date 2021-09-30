@@ -1,9 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserRO } from 'src/user/dto/user.dto';
-import { UserEntity } from 'src/user/user.entity';
-import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
+import { Votes } from '../types/votes.enum';
+import { UserRO } from '../user/dto/user.dto';
+import { UserEntity } from '../user/user.entity';
+import { UserService } from '../user/user.service';
 import { IdeaDTO, IdeaRO } from './dto/idea.dto';
 import { IdeaEntity } from './idea.entity';
 
@@ -23,7 +24,7 @@ export class IdeaService {
         return ideas.map(idea => idea.toResponseObject());
     }
 
-    async getIdeaByid(id: string, relations: string[] = ['author']): Promise<IdeaEntity> {
+    async getIdeaByid(id: string, relations: string[] = ['author', 'upvotes', 'downvotes']): Promise<IdeaEntity> {
         const idea = await this.ideaRepository.findOne(id, {relations});
 
         if (!idea) {
@@ -87,5 +88,31 @@ export class IdeaService {
         await this.userRepository.save(user);
 
         return user.toResponseObject();
+    }
+
+    async votes(ideaId: string, userId: string, vote: Votes): Promise<IdeaRO> {
+        const user = await this.userService.getUserById(userId);
+        const idea = await this.getIdeaByid(ideaId);
+
+        const opposite = vote === Votes.UP ? Votes.DOWN : Votes.UP;
+
+        if (idea[vote].filter(item => item.id === userId).length === 0) {
+            idea[opposite] = idea[opposite].filter(item => item.id !== userId);
+            idea[vote].push(user);
+        } else {
+            idea[vote] = idea[vote].filter(item => item.id !== userId);
+        }
+
+        await this.ideaRepository.save(idea);
+
+        return idea.toResponseObject();
+    }
+
+    upvotes(id: string, userId: string): Promise<IdeaRO> {
+        return this.votes(id, userId, Votes.UP);
+    }
+
+    downvotes(id: string, userId: string): Promise<IdeaRO> {
+        return this.votes(id, userId, Votes.DOWN);
     }
 }

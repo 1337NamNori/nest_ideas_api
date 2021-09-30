@@ -16,4 +16,6 @@ export interface IdeaRO {
     createdAt: Date;
     updatedAt: Date;
     author?: UserRO;
+    upvotes?: UserRO[];
+    downvotes?: UserRO[];
 }

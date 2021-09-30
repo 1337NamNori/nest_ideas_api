@@ -1,5 +1,5 @@
 import { UserEntity } from 'src/user/user.entity';
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { IdeaRO } from './dto/idea.dto';
 
 @Entity('ideas')
@@ -22,6 +22,34 @@ export class IdeaEntity {
     @ManyToOne(() => UserEntity, author => author.ideas)
     author: UserEntity;
 
+    @ManyToMany(() => UserEntity, {cascade: true})
+    @JoinTable({
+        name: 'upvotes',
+        joinColumn: {
+            name: 'ideaId',
+            referencedColumnName: 'id',
+        },
+        inverseJoinColumn: {
+            name: 'userId',
+            referencedColumnName: 'id'
+        }
+    })
+    upvotes: UserEntity[];
+
+    @ManyToMany(() => UserEntity, {cascade: true})
+    @JoinTable({
+        name: 'downvotes',
+        joinColumn: {
+            name: 'ideaId',
+            referencedColumnName: 'id',
+        },
+        inverseJoinColumn: {
+            name: 'userId',
+            referencedColumnName: 'id'
+        }
+    })
+    downvotes: UserEntity[];
+
     toResponseObject(): IdeaRO {
         const responseObject: IdeaRO = {
             id: this.id,
@@ -33,6 +61,14 @@ export class IdeaEntity {
 
         if (this.author) {
             responseObject.author = this.author.toResponseObject();
+        }
+
+        if (this.downvotes) {
+            responseObject.downvotes = this.downvotes.map(user => user.toResponseObject());
+        }
+
+        if (this.upvotes) {
+            responseObject.upvotes = this.upvotes.map(user => user.toResponseObject());
         }
 
         return responseObject;

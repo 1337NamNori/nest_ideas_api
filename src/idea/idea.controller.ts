@@ -55,4 +55,16 @@ export class IdeaController {
     bookmarks(@Param('id') id: string, @User('id') userId: string): Promise<UserRO> {
         return this.ideaService.bookmarks(id, userId);
     }
+
+    @Post(':id/upvotes')
+    @UseGuards(new AuthGuard())
+    upvotes(@Param('id') id: string, @User('id') userId: string): Promise<IdeaRO> {
+        return this.ideaService.upvotes(id, userId);
+    }
+
+    @Post(':id/downvotes')
+    @UseGuards(new AuthGuard())
+    downvotes(@Param('id') id: string, @User('id') userId: string): Promise<IdeaRO> {
+        return this.ideaService.downvotes(id, userId);
+    }
 }
