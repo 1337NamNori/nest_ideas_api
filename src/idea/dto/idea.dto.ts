@@ -1,4 +1,5 @@
 import { IsString } from "class-validator";
+import { CommentRO } from "src/comment/dto/comment.dto";
 import { UserRO } from "src/user/dto/user.dto";
 
 export class IdeaDTO {
@@ -18,4 +19,5 @@ export interface IdeaRO {
     author?: UserRO;
     upvotes?: UserRO[];
     downvotes?: UserRO[];
+    comments?: CommentRO[];
 }

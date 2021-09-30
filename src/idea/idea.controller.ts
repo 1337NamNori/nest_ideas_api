@@ -9,6 +9,7 @@ import {
     UseGuards,
     UsePipes,
 } from '@nestjs/common';
+import { CommentDTO } from 'src/comment/dto/comment.dto';
 import { AuthGuard } from 'src/shared/auth.guard';
 import { User } from 'src/shared/user.decorator';
 import { UserRO } from 'src/user/dto/user.dto';
@@ -66,5 +67,17 @@ export class IdeaController {
     @UseGuards(new AuthGuard())
     downvotes(@Param('id') id: string, @User('id') userId: string): Promise<IdeaRO> {
         return this.ideaService.downvotes(id, userId);
+    }
+
+    @Post(':id/comments')
+    @UseGuards(new AuthGuard())
+    @UsePipes(new ValidationPipe())
+    comment(@Param('id') id: string, @User('id') userId: string, @Body() data: CommentDTO): Promise<IdeaRO> {
+        return this.ideaService.comment(id, userId, data);
+    }
+
+    @Get(':id/comments')
+    getComments(@Param('id') id: string): Promise<IdeaRO> {
+        return this.ideaService.getIdeaWithComment(id);
     }
 }

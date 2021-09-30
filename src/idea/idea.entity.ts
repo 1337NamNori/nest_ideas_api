@@ -1,5 +1,6 @@
+import { CommentEntity } from 'src/comment/comment.entity';
 import { UserEntity } from 'src/user/user.entity';
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { IdeaRO } from './dto/idea.dto';
 
 @Entity('ideas')
@@ -50,6 +51,9 @@ export class IdeaEntity {
     })
     downvotes: UserEntity[];
 
+    @OneToMany(() => CommentEntity, comment => comment.idea)
+    comments: CommentEntity[];
+
     toResponseObject(): IdeaRO {
         const responseObject: IdeaRO = {
             id: this.id,
@@ -69,6 +73,10 @@ export class IdeaEntity {
 
         if (this.upvotes) {
             responseObject.upvotes = this.upvotes.map(user => user.toResponseObject());
+        }
+
+        if (this.comments) {
+            responseObject.comments = this.comments.map(comment => comment.toResponseObject());
         }
 
         return responseObject;

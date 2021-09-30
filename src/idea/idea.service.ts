@@ -1,5 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CommentEntity } from 'src/comment/comment.entity';
+import { CommentDTO } from 'src/comment/dto/comment.dto';
 import { Repository } from 'typeorm';
 import { Votes } from '../types/votes.enum';
 import { UserRO } from '../user/dto/user.dto';
@@ -15,6 +17,8 @@ export class IdeaService {
         private ideaRepository: Repository<IdeaEntity>,
         @InjectRepository(UserEntity)
         private userRepository: Repository<UserEntity>,
+        @InjectRepository(CommentEntity)
+        private commentRepository: Repository<CommentEntity>,
         private userService: UserService,
     ) {}
 
@@ -114,5 +118,24 @@ export class IdeaService {
 
     downvotes(id: string, userId: string): Promise<IdeaRO> {
         return this.votes(id, userId, Votes.DOWN);
+    }
+
+    async comment(id: string, userId: string, data: CommentDTO): Promise<IdeaRO> {
+        const idea = await this.getIdeaByid(id, ['comments', 'comments.user']);
+        const user = await this.userService.getUserById(userId);
+
+        const comment = await this.commentRepository.create({...data, user, idea });
+        await this.commentRepository.save(comment);
+
+        const newIdea = await this.getIdeaByid(id, ['comments', 'comments.user']);
+        
+
+        return newIdea.toResponseObject();
+    }
+
+    async getIdeaWithComment(id: string): Promise<IdeaRO> {
+        const idea = await this.getIdeaByid(id, ['comments', 'comments.user']);
+
+        return idea.toResponseObject();
     }
 }

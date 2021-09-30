@@ -10,9 +10,10 @@ import { UserModule } from './user/user.module';
 
 import { HttpExceptionFilter } from './shared/http-exception.filter';
 import { LoggingInterceptor } from './shared/logging.interceptor';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
-    imports: [TypeOrmModule.forRoot(), IdeaModule, UserModule],
+    imports: [TypeOrmModule.forRoot(), IdeaModule, UserModule, CommentModule],
     controllers: [AppController],
     providers: [
         AppService,
