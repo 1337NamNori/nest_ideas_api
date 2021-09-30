@@ -1,7 +1,8 @@
-import { BeforeInsert, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { UserRO } from "./dto/user.dto";
+import { IdeaEntity } from "src/idea/idea.entity";
 
 @Entity('users')
 export class UserEntity {
@@ -20,6 +21,9 @@ export class UserEntity {
     @CreateDateColumn()
     createdAt: Date;
 
+    @OneToMany(() => IdeaEntity, idea => idea.author)
+    ideas: IdeaEntity[];
+
     @BeforeInsert()
     async hashPassword() {
         const salt = await bcrypt.genSalt(10);
@@ -37,6 +41,10 @@ export class UserEntity {
             responseObject.token = this.token;
         }
 
+        if (this.ideas) {
+            responseObject.ideas = this.ideas.map(idea => idea.toResponseObject());
+        }
+
         return responseObject;
     }
 
@@ -46,6 +54,6 @@ export class UserEntity {
 
     private get token(): string {
         const {id, username} = this;
-        return jwt.sign({id, username}, process.env.SECRET, {expiresIn: '7'});
+        return jwt.sign({id, username}, process.env.SECRET, {expiresIn: '7d'});
     }
 }

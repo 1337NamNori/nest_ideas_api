@@ -12,7 +12,7 @@ import { ValidationErrors } from '../types/validate-failed.interface';
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
     async transform(value: any, { metatype }: ArgumentMetadata) {
-        if (this.isEmpty(value)) {
+        if (value instanceof Object && this.isEmpty(value)) {
             throw new HttpException('The request body is empty.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
 

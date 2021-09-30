@@ -6,8 +6,11 @@ import {
     Param,
     Post,
     Put,
+    UseGuards,
     UsePipes,
 } from '@nestjs/common';
+import { AuthGuard } from 'src/shared/auth.guard';
+import { User } from 'src/shared/user.decorator';
 import { ValidationPipe } from '../shared/validation.pipe';
 import { IdeaDTO, IdeaRO } from './dto/idea.dto';
 import { IdeaService } from './idea.service';
@@ -22,9 +25,10 @@ export class IdeaController {
     }
 
     @Post()
+    @UseGuards(new AuthGuard())
     @UsePipes(new ValidationPipe())
-    create(@Body() data: IdeaDTO): Promise<IdeaRO> {
-        return this.ideaService.createIdea(data);
+    create(@User('id') userId: string, @Body() data: IdeaDTO): Promise<IdeaRO> {
+        return this.ideaService.createIdea(data, userId);
     }
 
     @Get(':id')
@@ -33,13 +37,15 @@ export class IdeaController {
     }
 
     @Put(':id')
+    @UseGuards(new AuthGuard())
     @UsePipes(new ValidationPipe())
-    update(@Param('id') id: string, @Body() data: Partial<IdeaDTO>) {
-        return this.ideaService.updateIdea(id, data);
+    update(@Param('id') id: string, @User('id') userId: string, @Body() data: Partial<IdeaDTO>) {
+        return this.ideaService.updateIdea(id, data, userId);
     }
 
     @Delete(':id')
-    remove(@Param('id') id: string): Promise<IdeaRO> {
-        return this.ideaService.deleteIdea(id);
+    @UseGuards(new AuthGuard())
+    remove(@Param('id') id: string, @User('id') userId: string): Promise<IdeaRO> {
+        return this.ideaService.deleteIdea(id, userId);
     }
 }
