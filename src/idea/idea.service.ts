@@ -39,7 +39,7 @@ export class IdeaService {
         return idea.toResponseObject();
     }
 
-    async updateIdea(id: string, data: IdeaDTO): Promise<IdeaRO> {
+    async updateIdea(id: string, data: Partial<IdeaDTO>): Promise<IdeaRO> {
         const idea = await this.getIdeaByid(id);
         await this.ideaRepository.save({...idea, ...data});
 
