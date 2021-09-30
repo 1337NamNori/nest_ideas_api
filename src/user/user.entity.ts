@@ -1,4 +1,4 @@
-import { BeforeUpdate, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { UserRO } from "./dto/user.dto";
@@ -20,7 +20,7 @@ export class UserEntity {
     @CreateDateColumn()
     createdAt: Date;
 
-    @BeforeUpdate()
+    @BeforeInsert()
     async hashPassword() {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
@@ -46,6 +46,6 @@ export class UserEntity {
 
     private get token(): string {
         const {id, username} = this;
-        return jwt.sign({id, username}, process.env.SECRET, {expiresIn: '7d'});
+        return jwt.sign({id, username}, process.env.SECRET, {expiresIn: '7'});
     }
 }
