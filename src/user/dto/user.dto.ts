@@ -16,4 +16,5 @@ export interface UserRO {
     createdAt: Date;
     token?: string;
     ideas?: IdeaRO[];
+    bookmarks?: IdeaRO[];
 }

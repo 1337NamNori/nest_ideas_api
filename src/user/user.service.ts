@@ -10,8 +10,8 @@ export class UserService {
         @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>
     ) {}
 
-    async getUserById(id: string): Promise<UserEntity> {
-        const user = await this.userRepository.findOne(id);
+    async getUserById(id: string, relations: string[] = []): Promise<UserEntity> {
+        const user = await this.userRepository.findOne(id, {relations});
 
         if (!user) {
             throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);

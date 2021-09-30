@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from 'src/shared/auth.guard';
 import { User } from 'src/shared/user.decorator';
+import { UserRO } from 'src/user/dto/user.dto';
 import { ValidationPipe } from '../shared/validation.pipe';
 import { IdeaDTO, IdeaRO } from './dto/idea.dto';
 import { IdeaService } from './idea.service';
@@ -47,5 +48,11 @@ export class IdeaController {
     @UseGuards(new AuthGuard())
     remove(@Param('id') id: string, @User('id') userId: string): Promise<IdeaRO> {
         return this.ideaService.deleteIdea(id, userId);
+    }
+
+    @Post(':id/bookmarks')
+    @UseGuards(new AuthGuard())
+    bookmarks(@Param('id') id: string, @User('id') userId: string): Promise<UserRO> {
+        return this.ideaService.bookmarks(id, userId);
     }
 }

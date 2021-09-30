@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserRO } from 'src/user/dto/user.dto';
 import { UserEntity } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
@@ -9,7 +10,10 @@ import { IdeaEntity } from './idea.entity';
 @Injectable()
 export class IdeaService {
     constructor(
-        @InjectRepository(IdeaEntity) private ideaRepository: Repository<IdeaEntity>,
+        @InjectRepository(IdeaEntity) 
+        private ideaRepository: Repository<IdeaEntity>,
+        @InjectRepository(UserEntity)
+        private userRepository: Repository<UserEntity>,
         private userService: UserService,
     ) {}
 
@@ -19,8 +23,8 @@ export class IdeaService {
         return ideas.map(idea => idea.toResponseObject());
     }
 
-    async getIdeaByid(id: string): Promise<IdeaEntity> {
-        const idea = await this.ideaRepository.findOne(id, {relations: ['author']});
+    async getIdeaByid(id: string, relations: string[] = ['author']): Promise<IdeaEntity> {
+        const idea = await this.ideaRepository.findOne(id, {relations});
 
         if (!idea) {
             throw new HttpException('Idea not found', HttpStatus.NOT_FOUND);
@@ -68,5 +72,20 @@ export class IdeaService {
         await this.ideaRepository.delete(id);
 
         return idea.toResponseObject();
+    }
+
+    async bookmarks(id: string, userId: string): Promise<UserRO> {
+        const user = await this.userService.getUserById(userId, ['bookmarks', 'bookmarks.author']);
+        const idea = await this.getIdeaByid(id);
+
+        if (user.bookmarks.filter(bookmark => bookmark.id === idea.id).length > 0) {
+            user.bookmarks = user.bookmarks.filter(bookmark => bookmark.id !== idea.id);
+        } else {
+            user.bookmarks.push(idea);
+        }
+
+        await this.userRepository.save(user);
+
+        return user.toResponseObject();
     }
 }

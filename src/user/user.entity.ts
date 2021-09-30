@@ -1,8 +1,17 @@
-import { BeforeInsert, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {
+    BeforeInsert,
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinTable,
+    ManyToMany,
+    OneToMany,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { UserRO } from "./dto/user.dto";
-import { IdeaEntity } from "src/idea/idea.entity";
+import { UserRO } from './dto/user.dto';
+import { IdeaEntity } from 'src/idea/idea.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -21,8 +30,22 @@ export class UserEntity {
     @CreateDateColumn()
     createdAt: Date;
 
-    @OneToMany(() => IdeaEntity, idea => idea.author)
+    @OneToMany(() => IdeaEntity, (idea) => idea.author)
     ideas: IdeaEntity[];
+
+    @ManyToMany(() => IdeaEntity, { cascade: true })
+    @JoinTable({
+        name: 'bookmarks',
+        joinColumn: {
+            name: "userId",
+            referencedColumnName: "id"
+        },
+        inverseJoinColumn: {
+            name: "ideaId",
+            referencedColumnName: "id"
+        } 
+    })
+    bookmarks: IdeaEntity[];
 
     @BeforeInsert()
     async hashPassword() {
@@ -42,7 +65,15 @@ export class UserEntity {
         }
 
         if (this.ideas) {
-            responseObject.ideas = this.ideas.map(idea => idea.toResponseObject());
+            responseObject.ideas = this.ideas.map((idea) =>
+                idea.toResponseObject(),
+            );
+        }
+
+        if (this.bookmarks) {
+            responseObject.bookmarks = this.bookmarks.map((bookmark) =>
+                bookmark.toResponseObject(),
+            );
         }
 
         return responseObject;
@@ -53,7 +84,9 @@ export class UserEntity {
     }
 
     private get token(): string {
-        const {id, username} = this;
-        return jwt.sign({id, username}, process.env.SECRET, {expiresIn: '7d'});
+        const { id, username } = this;
+        return jwt.sign({ id, username }, process.env.SECRET, {
+            expiresIn: '7d',
+        });
     }
 }
