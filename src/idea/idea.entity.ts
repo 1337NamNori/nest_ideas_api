@@ -25,7 +25,7 @@ export class IdeaEntity {
             description: this.description,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
-        }
+        };
 
         return responseObject;
     }
