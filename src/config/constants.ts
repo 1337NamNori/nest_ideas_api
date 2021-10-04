@@ -1,0 +1,1 @@
+export const PAGINATE_PER_PAGE = 15;

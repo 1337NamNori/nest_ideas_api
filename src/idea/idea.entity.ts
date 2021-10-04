@@ -11,7 +11,7 @@ export class IdeaEntity {
     @Column('varchar')
     idea: string;
 
-    @Column('varchar')
+    @Column('text')
     description: string;
 
     @CreateDateColumn()

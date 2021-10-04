@@ -1,29 +1,38 @@
 import {
     Body,
     Controller,
+    DefaultValuePipe,
     Delete,
     Get,
     Param,
+    ParseIntPipe,
     Post,
     Put,
+    Query,
+    Req,
     UseGuards,
     UsePipes,
 } from '@nestjs/common';
-import { CommentDTO } from 'src/comment/dto/comment.dto';
-import { AuthGuard } from 'src/shared/auth.guard';
-import { User } from 'src/shared/user.decorator';
-import { UserRO } from 'src/user/dto/user.dto';
+import {Request} from 'express';
+import { CommentDTO } from '../comment/dto/comment.dto';
+import { AuthGuard } from '../shared/auth.guard';
+import { User } from '../shared/user.decorator';
+import { UserRO } from '../user/dto/user.dto';
 import { ValidationPipe } from '../shared/validation.pipe';
 import { IdeaDTO, IdeaRO } from './dto/idea.dto';
 import { IdeaService } from './idea.service';
+import { Pagination } from 'src/types/pagination.interface';
 
 @Controller('api/ideas')
 export class IdeaController {
     constructor(private ideaService: IdeaService) {}
 
     @Get()
-    findAll(): Promise<IdeaRO[]> {
-        return this.ideaService.findAllIdeas();
+    findAll(
+        @Req() request: Request, 
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page = 1,
+    ): Promise<Pagination<IdeaRO>> {
+        return this.ideaService.findAllIdeas(request.route.path, page);
     }
 
     @Post()

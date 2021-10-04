@@ -1,5 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { paginate } from 'src/helpers/pagination';
+import { Pagination } from 'src/types/pagination.interface';
 import { Repository } from 'typeorm';
 import { UserDTO, UserRO } from './dto/user.dto';
 import { UserEntity } from './user.entity';
@@ -20,10 +22,8 @@ export class UserService {
         return user;
     }
 
-    async findAllUsers(): Promise<UserRO[]> {
-        const users = await this.userRepository.find();
-
-        return users.map(user => user.toResponseObject());
+    async findAllUsers(route: string, page: number): Promise<Pagination<UserRO>> {
+        return await paginate<UserRO, UserEntity>(this.userRepository, route, [], page);
     }
     
     async register(data: UserDTO): Promise<UserRO> {
@@ -50,6 +50,4 @@ export class UserService {
 
         return user.toResponseObject(true);
     }
-
-
 }

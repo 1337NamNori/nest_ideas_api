@@ -2,6 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentEntity } from 'src/comment/comment.entity';
 import { CommentDTO } from 'src/comment/dto/comment.dto';
+import { Pagination } from 'src/types/pagination.interface';
+import {paginate} from 'src/helpers/pagination';
 import { Repository } from 'typeorm';
 import { Votes } from '../types/votes.enum';
 import { UserRO } from '../user/dto/user.dto';
@@ -22,13 +24,18 @@ export class IdeaService {
         private userService: UserService,
     ) {}
 
-    async findAllIdeas(): Promise<IdeaRO[]> {
-        const ideas = await this.ideaRepository.find();
+    private relations = [
+        'author', 
+        'upvotes',
+        'downvotes',
+        'comments',
+    ]
 
-        return ideas.map(idea => idea.toResponseObject());
+    async findAllIdeas(route: string, page: number): Promise<Pagination<IdeaRO>> {
+        return await paginate<IdeaRO, IdeaEntity>(this.ideaRepository, route, this.relations, page);
     }
 
-    async getIdeaByid(id: string, relations: string[] = ['author', 'upvotes', 'downvotes']): Promise<IdeaEntity> {
+    async getIdeaByid(id: string, relations: string[] = this.relations): Promise<IdeaEntity> {
         const idea = await this.ideaRepository.findOne(id, {relations});
 
         if (!idea) {
@@ -124,7 +131,7 @@ export class IdeaService {
         const idea = await this.getIdeaByid(id, ['comments', 'comments.user']);
         const user = await this.userService.getUserById(userId);
 
-        const comment = await this.commentRepository.create({...data, user, idea });
+        const comment = this.commentRepository.create({...data, user, idea });
         await this.commentRepository.save(comment);
 
         const newIdea = await this.getIdeaByid(id, ['comments', 'comments.user']);
